@@ -33,6 +33,8 @@ const express = require('express');
 const jsdom = require('jsdom');
 const fs = require('fs');
 
+//1 & 2. npm install cookie-parser + se till att den är användbar i er lösning.
+
 const app = express();
 
 app.listen(3000, function() {
@@ -41,10 +43,12 @@ app.listen(3000, function() {
 
 app.use('/openDir',express.static(__dirname + '/static'));
 app.use(express.urlencoded( {extended : true} ));
+//3. Ett middleware för kakor kan vara bra att ha.
 
 app.get('/', function(request, response) {
 
-    console.log(request.method, request.url);
+    //GET/POST demo i Postman
+    console.log(request.query, request.query.yellow);
 
     response.sendFile(__dirname + '/static/html/form.html', function(err) {
         if( err ) {
@@ -62,12 +66,16 @@ app.get('/', function(request, response) {
 //POST på rooten?
 app.post('/', function(request, response) {
 
-    console.log( request.body );
+    let red, green, blue; //Default undefined!
 
     try {
-        let red = request.body.red;
-        let green = request.body.green;
-        let blue = request.body.blue;
+        console.log( request.body );
+
+        if(request.body !== undefined) { //Säkerställ att body inte är undefined!
+            red = request.body.red;
+            green = request.body.green;
+            blue = request.body.blue;
+        }
 
         if( red === undefined || green === undefined || blue === undefined) {
             throw new Error('Ange ett färgvärde"!');
@@ -93,6 +101,8 @@ app.post('/', function(request, response) {
             throw new Error('Färg ska vara 0-255!');
         }
 
+        //4. Skapa tre kakor: red, green & blue!
+
         //Allt ok i gränssnittet
         fs.readFile(__dirname + '/static/html/index.html', function( err, data) {
 
@@ -116,7 +126,7 @@ app.post('/', function(request, response) {
 
     }catch( oE ) {
         //Ngt gick fel med valideringen från gränssnittet.
-
+        console.log(oE.message );
          //Allt ok i gränssnittet
          fs.readFile(__dirname + '/static/html/form.html', function( err, data) {
 
@@ -125,20 +135,19 @@ app.post('/', function(request, response) {
                 console.log( err );
                 response.send( err.toString );
             } {
-                //Allt ok med att läsa upp filen!
-
+            
                 let serverDOM = new jsdom.JSDOM(data);
 
-                if( request.body.red !== undefined ) {
-                    serverDOM.window.document.querySelector('[name=red]').setAttribute('value', request.body.red);
+                if( red !== undefined ) { //red, green & blue är synliga eftersom de är skrivna innanför första spetsparantesen!
+                    serverDOM.window.document.querySelector('[name=red]').setAttribute('value', red); //Observera att .value inte finns implementerat i jsdom!
                 }
 
-                if( request.body.green !== undefined ) {
-                    serverDOM.window.document.querySelector('[name=green]').setAttribute('value', request.body.green);
+                if( green !== undefined ) {
+                    serverDOM.window.document.querySelector('[name=green]').setAttribute('value', green);
                 }
 
-                if( request.body.blue !== undefined ) {
-                    serverDOM.window.document.querySelector('[name=blue]').setAttribute('value', request.body.blue);
+                if( blue !== undefined ) {
+                    serverDOM.window.document.querySelector('[name=blue]').setAttribute('value', blue);
                 }
                
                 serverDOM.window.document.querySelector('#errorMsg').textContent = oE.message;
@@ -152,3 +161,10 @@ app.post('/', function(request, response) {
     }
 
 });
+
+//5. get på /reset
+
+//6. get på /start
+
+
+
