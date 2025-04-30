@@ -44,6 +44,8 @@ app.use(express.urlencoded( {extended : true} ));
 
 app.get('/', function(request, response) {
 
+    console.log(request.method, request.url);
+
     response.sendFile(__dirname + '/static/html/form.html', function(err) {
         if( err ) {
 
@@ -67,44 +69,86 @@ app.post('/', function(request, response) {
         let green = request.body.green;
         let blue = request.body.blue;
 
-        if( red === undefined) {
-            throw new Error('Ange färg"!');
+        if( red === undefined || green === undefined || blue === undefined) {
+            throw new Error('Ange ett färgvärde"!');
         }
 
         red = red.trim();
+        green = green.trim();
+        blue = blue.trim();
 
-        if( red.length === 0) {
-            throw new Error('Tomt värde!');
+        if( red.length === 0 || green.length === 0 || blue.length === 0) {
+            throw new Error('Färg får inte vara tomt!');
         }
 
-        if( isNaN( red )) {
-            throw new Error ('Ange tal!');
+        if( isNaN( red ) || isNaN( green ) || isNaN( blue )) {
+            throw new Error ('Ange ett heltal!');
         }
 
         red = parseInt(red);
+        green = parseInt(green);
+        blue = parseInt(blue);
 
-        if( red < 0 || red > 256) {
+        if( ( red < 0 || red > 256 ) || ( green < 0 || green > 256 ) || ( blue < 0 || blue > 256 )) {
             throw new Error('Färg ska vara 0-255!');
         }
 
+        //Allt ok i gränssnittet
         fs.readFile(__dirname + '/static/html/index.html', function( err, data) {
 
-            //Kontrollera att allt är ok eller inte...
+            //Ngt gick fel med att läsa upp filen!
+            if( err ) {
+                console.log( err );
+                response.send( err.toString );
+            } {
+                //Allt ok med att läsa upp filen!
 
-            let serverDOM = new jsdom.JSDOM(data);
+                let serverDOM = new jsdom.JSDOM(data);
 
-            serverDOM.window.document.querySelector('#status').style.backgroundColor = 'rgb(' + red.toString() + ',' + green + ',' + blue + ')';
+                serverDOM.window.document.querySelector('#status').style.backgroundColor = 'rgb(' + red.toString() + ',' + green + ',' + blue + ')';
 
-            data = serverDOM.serialize();
+                data = serverDOM.serialize();
 
-            response.send (data );
+                response.send (data );
+            }
 
         });
 
-    }catch( err ) {
+    }catch( oE ) {
+        //Ngt gick fel med valideringen från gränssnittet.
 
-        //Använd med fördel koden ovan för att lösa den sista delen av uppgiften.
-        console.log( err.message );
+         //Allt ok i gränssnittet
+         fs.readFile(__dirname + '/static/html/form.html', function( err, data) {
+
+            //Ngt gick fel med att läsa upp filen!
+            if( err ) {
+                console.log( err );
+                response.send( err.toString );
+            } {
+                //Allt ok med att läsa upp filen!
+
+                let serverDOM = new jsdom.JSDOM(data);
+
+                if( request.body.red !== undefined ) {
+                    serverDOM.window.document.querySelector('[name=red]').setAttribute('value', request.body.red);
+                }
+
+                if( request.body.green !== undefined ) {
+                    serverDOM.window.document.querySelector('[name=green]').setAttribute('value', request.body.green);
+                }
+
+                if( request.body.blue !== undefined ) {
+                    serverDOM.window.document.querySelector('[name=blue]').setAttribute('value', request.body.blue);
+                }
+               
+                serverDOM.window.document.querySelector('#errorMsg').textContent = oE.message;
+
+                data = serverDOM.serialize();
+
+                response.send (data );
+            }
+
+        });
     }
 
 });
