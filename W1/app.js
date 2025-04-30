@@ -56,3 +56,55 @@ app.get('/', function(request, response) {
         }
     });
 });
+
+//POST på rooten?
+app.post('/', function(request, response) {
+
+    console.log( request.body );
+
+    try {
+        let red = request.body.red;
+        let green = request.body.green;
+        let blue = request.body.blue;
+
+        if( red === undefined) {
+            throw new Error('Ange färg"!');
+        }
+
+        red = red.trim();
+
+        if( red.length === 0) {
+            throw new Error('Tomt värde!');
+        }
+
+        if( isNaN( red )) {
+            throw new Error ('Ange tal!');
+        }
+
+        red = parseInt(red);
+
+        if( red < 0 || red > 256) {
+            throw new Error('Färg ska vara 0-255!');
+        }
+
+        fs.readFile(__dirname + '/static/html/index.html', function( err, data) {
+
+            //Kontrollera att allt är ok eller inte...
+
+            let serverDOM = new jsdom.JSDOM(data);
+
+            serverDOM.window.document.querySelector('#status').style.backgroundColor = 'rgb(' + red.toString() + ',' + green + ',' + blue + ')';
+
+            data = serverDOM.serialize();
+
+            response.send (data );
+
+        });
+
+    }catch( err ) {
+
+        //Använd med fördel koden ovan för att lösa den sista delen av uppgiften.
+        console.log( err.message );
+    }
+
+});
