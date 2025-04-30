@@ -4,6 +4,7 @@
     Skapa ett projekt: npm init
     Installera express: npm install express
     Installera jsdom: npm install jsdom
+    Kanske installera nodemon lokalt.
 
     1. Starta en webbserver som svarar på port 3000
     2. Lägg till ett middleware för att exponera lämplig mapp (se form.html och katalogstruktur)
@@ -27,3 +28,31 @@
     För att testa er lösning använd både webbläsare och Postman.
 
 */
+
+const express = require('express');
+const jsdom = require('jsdom');
+const fs = require('fs');
+
+const app = express();
+
+app.listen(3000, function() {
+    console.log('Servern är uppe på port 3000!');
+});
+
+app.use('/openDir',express.static(__dirname + '/static'));
+app.use(express.urlencoded( {extended : true} ));
+
+app.get('/', function(request, response) {
+
+    response.sendFile(__dirname + '/static/html/form.html', function(err) {
+        if( err ) {
+
+            console.log( err );
+            response.send(err.message);
+
+        } else {
+
+            console.log('Allt ok!');
+        }
+    });
+});
