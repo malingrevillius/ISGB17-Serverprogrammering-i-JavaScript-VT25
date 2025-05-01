@@ -110,7 +110,7 @@ app.post('/', function(request, response) {
             if( err ) {
                 console.log( err );
                 response.send( err.toString );
-            } {
+            } else {
                 //Allt ok med att läsa upp filen!
 
                 let serverDOM = new jsdom.JSDOM(data);
@@ -134,7 +134,7 @@ app.post('/', function(request, response) {
             if( err ) {
                 console.log( err );
                 response.send( err.toString );
-            } {
+            } else {
             
                 let serverDOM = new jsdom.JSDOM(data);
 
