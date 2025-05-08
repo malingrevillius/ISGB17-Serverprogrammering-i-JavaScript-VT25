@@ -9,6 +9,8 @@ rakna().then(function(varde) {
 
 
 
+
+
 async function rakna() {
     console.log('start filläsning');
 
